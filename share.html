@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menyimpan file yang dibagikan... — DropShare</title>
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#002ccf">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; }
+body {
+  font-family:'Inter', sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  background-image: var(--bg-decor);
+  min-height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  padding: 24px;
+}
+h1,h2,.logo-text { font-family:'Poppins', sans-serif; }
+svg { display:block; }
+
+:root, [data-theme="lime"] {
+  --bg:#eefbdd;
+  --bg-decor: radial-gradient(circle at 15% 10%, rgba(163,230,53,.35), transparent 45%),
+              radial-gradient(circle at 90% 80%, rgba(101,163,13,.25), transparent 50%);
+  --text:#1c2b12; --text-soft:#4b5c3d;
+  --accent:#002ccf; --accent-2:#002ccf; --on-accent:#0d1b04;
+  --glass-bg: rgba(255,255,255,.55); --glass-border: rgba(255,255,255,.65);
+  --card-shadow: 0 20px 45px -15px rgba(60,90,10,.35);
+  --input-bg: rgba(255,255,255,.6);
+  --danger:#dc2626; --success:#1658a3; --warn:#d97706;
+}
+[data-theme="light"] {
+  --bg:#f7f8fb;
+  --bg-decor: radial-gradient(circle at 15% 10%, rgba(120,120,255,.08), transparent 45%),
+              radial-gradient(circle at 90% 80%, rgba(0,0,0,.04), transparent 50%);
+  --text:#1a1c22; --text-soft:#5b6070;
+  --accent:#4f46e5; --accent-2:#6366f1; --on-accent:#ffffff;
+  --glass-bg: rgba(255,255,255,.65); --glass-border: rgba(255,255,255,.8);
+  --card-shadow: 0 20px 45px -15px rgba(30,30,60,.18);
+  --input-bg: rgba(255,255,255,.7);
+  --danger:#dc2626; --success:#16a34a; --warn:#d97706;
+}
+[data-theme="dark"] {
+  --bg:#0b0e0a;
+  --bg-decor: radial-gradient(circle at 15% 10%, rgba(163,230,53,.18), transparent 45%),
+              radial-gradient(circle at 90% 80%, rgba(101,163,13,.14), transparent 50%);
+  --text:#eef5e6; --text-soft:#a7b39a;
+  --accent:#e63535; --accent-2:#cc1616; --on-accent:#0d1b04;
+  --glass-bg: rgba(255,255,255,.05); --glass-border: rgba(255,255,255,.12);
+  --card-shadow: 0 20px 45px -15px rgba(0,0,0,.6);
+  --input-bg: rgba(255,255,255,.06);
+  --danger:#f87171; --success:#4ade80; --warn:#fbbf24;
+}
+
+.card {
+  width:100%; max-width:420px;
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-radius: 26px; padding: 32px 28px; box-shadow: var(--card-shadow);
+  text-align:center; animation: rise .5s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes rise { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+
+.status-icon {
+  width:64px; height:64px; border-radius:50%; margin:0 auto 18px;
+  display:flex; align-items:center; justify-content:center;
+  background: linear-gradient(135deg, var(--accent-2), var(--accent)); color: var(--on-accent);
+}
+.status-icon.error { background: linear-gradient(135deg, #f87171, var(--danger)); color:#fff; }
+.status-icon.success { background: linear-gradient(135deg, #4ade80, var(--success)); color:#fff; }
+
+h1 { font-size:19px; margin-bottom:6px; }
+p.sub { color: var(--text-soft); font-size:13.5px; margin-bottom: 18px; }
+
+.spinner {
+  width:22px; height:22px; border-radius:50%; margin: 6px auto 0;
+  border:3px solid rgba(0,0,0,.12); border-top-color: var(--accent);
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.file-chip {
+  display:flex; align-items:center; gap:10px; text-align:left;
+  background: var(--input-bg); border:1px solid var(--glass-border);
+  border-radius:14px; padding:12px 14px; margin-bottom:18px;
+}
+.file-chip .f-icon {
+  width:36px; height:36px; border-radius:10px; flex-shrink:0;
+  background: linear-gradient(135deg, var(--accent-2), var(--accent)); color: var(--on-accent);
+  display:flex; align-items:center; justify-content:center;
+}
+.file-chip .f-name { font-weight:600; font-size:13.5px; word-break:break-all; }
+.file-chip .f-size { font-size:11.5px; color: var(--text-soft); }
+
+.info-note {
+  display:flex; align-items:flex-start; gap:8px; text-align:left;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border:1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius:12px; padding:10px 12px; margin-bottom:18px; font-size:12px; color: var(--text-soft);
+}
+.info-note svg { flex-shrink:0; margin-top:1px; color: var(--warn); }
+
+.btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  width:100%; padding: 13px 22px; border-radius: 14px; border:none;
+  font-family:'Inter', sans-serif; font-weight:600; font-size:14.5px;
+  cursor:pointer; transition: transform .15s ease, box-shadow .15s ease;
+  margin-bottom:10px;
+}
+.btn:active { transform: scale(.97); }
+.btn-primary { background: linear-gradient(135deg, var(--accent-2), var(--accent)); color: var(--on-accent); box-shadow: 0 12px 24px -10px rgba(101,163,13,.65); }
+.btn-outline { background: var(--input-bg); color: var(--text); border:1px solid var(--glass-border); }
+
+.hidden { display:none !important; }
+</style>
+</head>
+<body data-theme="lime">
+
+<div class="card" id="card">
+
+  <!-- STATE: loading (default) -->
+  <div id="stateLoading">
+    <div class="status-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v14"/></svg>
+    </div>
+    <h1>Menerima file...</h1>
+    <p class="sub">Tunggu sebentar, file dari WhatsApp sedang disiapkan.</p>
+    <div class="spinner"></div>
+  </div>
+
+  <!-- STATE: sukses tersimpan lokal -->
+  <div id="stateSuccess" class="hidden">
+    <div class="status-icon success">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+    </div>
+    <h1>File Tersimpan ke HP</h1>
+    <p class="sub">File sudah diunduh ke folder Download perangkatmu. Tidak ada data yang dikirim ke server.</p>
+
+    <div class="file-chip">
+      <div class="f-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
+      </div>
+      <div>
+        <div class="f-name" id="rFileName">file.json</div>
+        <div class="f-size" id="rFileSize">0 KB</div>
+      </div>
+    </div>
+
+    <div class="info-note" id="jsonWarn" style="display:none;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+      <span>Isi file ini bukan format JSON yang valid, tapi tetap berhasil disimpan sebagai file biasa.</span>
+    </div>
+
+    <button class="btn btn-outline" id="redownloadBtn">Unduh Ulang</button>
+    <button class="btn btn-primary" id="toIndexBtn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 7h6m0 0v6m0-6L10 17"/></svg>
+      Ubah File Ini Jadi Link
+    </button>
+  </div>
+
+  <!-- STATE: error -->
+  <div id="stateError" class="hidden">
+    <div class="status-icon error">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </div>
+    <h1>Gagal Menyimpan</h1>
+    <p class="sub" id="errorMsg">Terjadi kesalahan saat memproses file.</p>
+    <pre id="debugInfo" style="text-align:left; font-size:10.5px; background:var(--input-bg); border:1px solid var(--glass-border); border-radius:10px; padding:10px; margin-bottom:16px; white-space:pre-wrap; word-break:break-all; color:var(--text-soft); max-height:160px; overflow:auto;"></pre>
+    <button class="btn btn-outline" id="backBtn">Kembali ke DropShare</button>
+  </div>
+
+</div>
+
+<script>
+/* ==========================================================================
+   SHARE.HTML — logic
+   Ambil file yang "dititipkan" sw.js di Cache Storage, lalu LANGSUNG unduh
+   ke perangkat lokal. TIDAK ADA data yang dikirim/disimpan ke server/Firebase
+   di halaman ini. Kalau user mau bikin link dari file ini, tombol
+   "Ubah File Ini Jadi Link" akan membawa file yang sama ke index.html
+   (file dititipkan sesaat di Cache Storage milik browser sendiri,
+   bukan diunggah otomatis - upload tetap harus ditekan manual di index.html).
+   ========================================================================== */
+
+const SHARE_CACHE = "dropshare-share-target-v1";
+let currentBlob = null;
+let currentFileName = "file.json";
+
+const stateLoading = document.getElementById("stateLoading");
+const stateSuccess = document.getElementById("stateSuccess");
+const stateError   = document.getElementById("stateError");
+const rFileName = document.getElementById("rFileName");
+const rFileSize = document.getElementById("rFileSize");
+const jsonWarn = document.getElementById("jsonWarn");
+const errorMsg = document.getElementById("errorMsg");
+
+function showState(el) {
+  [stateLoading, stateSuccess, stateError].forEach((s) => s.classList.add("hidden"));
+  el.classList.remove("hidden");
+}
+
+function formatBytes(bytes) {
+  if (!bytes) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+}
+
+function showError(message) {
+  errorMsg.textContent = message;
+  showState(stateError);
+  collectDebugInfo();
+}
+
+async function collectDebugInfo() {
+  const debugEl = document.getElementById("debugInfo");
+  const lines = [];
+  try {
+    lines.push("URL: " + window.location.href);
+    lines.push("SW support: " + ("serviceWorker" in navigator));
+
+    if ("serviceWorker" in navigator) {
+      const reg = await navigator.serviceWorker.getRegistration();
+      lines.push("SW terdaftar: " + !!reg);
+      if (reg) {
+        lines.push("SW scope: " + reg.scope);
+        lines.push("SW active: " + !!reg.active);
+        lines.push("SW waiting: " + !!reg.waiting);
+        lines.push("SW installing: " + !!reg.installing);
+      }
+      lines.push("SW controller halaman ini: " + !!navigator.serviceWorker.controller);
+    }
+
+    if ("caches" in window) {
+      const names = await caches.keys();
+      lines.push("Daftar cache: " + JSON.stringify(names));
+      if (names.includes("dropshare-share-target-v1")) {
+        const cache = await caches.open("dropshare-share-target-v1");
+        const keys = await cache.keys();
+        lines.push("Isi cache share-target: " + JSON.stringify(keys.map((k) => k.url)));
+
+        const debugLogRes = await cache.match("debug-log");
+        if (debugLogRes) {
+          const debugText = await debugLogRes.text();
+          lines.push("--- Catatan dari sw.js ---");
+          lines.push(debugText);
+        } else {
+          lines.push("--- Tidak ada catatan dari sw.js (POST mungkin tidak sampai ke sw.js) ---");
+        }
+      }
+    }
+  } catch (err) {
+    lines.push("Error saat ambil debug info: " + err.message);
+  }
+  debugEl.textContent = lines.join("\n");
+}
+
+function triggerLocalDownload(blob, fileName) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+document.getElementById("backBtn").addEventListener("click", () => {
+  window.location.href = "index.html";
+});
+
+document.getElementById("redownloadBtn").addEventListener("click", () => {
+  if (currentBlob) triggerLocalDownload(currentBlob, currentFileName);
+});
+
+document.getElementById("toIndexBtn").addEventListener("click", async () => {
+  // Titipkan lagi file ini ke Cache Storage (khusus dibaca index.html sekali),
+  // supaya index.html bisa langsung menyiapkan file itu di form upload -
+  // TANPA file ini otomatis terkirim ke server. User tetap harus menekan
+  // tombol "Unggah File" sendiri di index.html kalau memang mau jadi link.
+  try {
+    const cache = await caches.open(SHARE_CACHE);
+    await cache.put("shared-file", new Response(currentBlob, {
+      headers: {
+        "Content-Type": currentBlob.type || "application/json",
+        "X-File-Name": encodeURIComponent(currentFileName)
+      }
+    }));
+  } catch (err) {
+    console.warn("Gagal menitipkan file ke index.html:", err);
+  }
+  window.location.href = "index.html?from-share=1";
+});
+
+async function main() {
+  const params = new URLSearchParams(window.location.search);
+
+  if (!("caches" in window)) {
+    return showError("Browser ini tidak mendukung fitur berbagi otomatis. Silakan buka file manual dari WhatsApp.");
+  }
+
+  if (params.get("from-share") === "error") {
+    return showError("Gagal membaca file yang dibagikan.");
+  }
+
+  try {
+    const cache = await caches.open(SHARE_CACHE);
+    const res = await cache.match("shared-file");
+
+    if (!res) {
+      return showError("Tidak ada file yang diterima. Coba bagikan ulang lewat WhatsApp.");
+    }
+
+    const blob = await res.blob();
+    const rawName = res.headers.get("X-File-Name");
+    const fileName = rawName ? decodeURIComponent(rawName) : "shared.json";
+    await cache.delete("shared-file"); // sudah dibaca ke memori, bersihkan cache
+
+    if (blob.size === 0) {
+      return showError("File yang dibagikan kosong.");
+    }
+
+    currentBlob = blob;
+    currentFileName = fileName;
+
+    // Cek ringan validitas JSON, HANYA untuk info - file tetap diunduh walau invalid
+    let isValidJson = true;
+    try {
+      const text = await blob.text();
+      JSON.parse(text);
+    } catch {
+      isValidJson = false;
+    }
+
+    rFileName.textContent = fileName;
+    rFileSize.textContent = formatBytes(blob.size);
+    jsonWarn.style.display = isValidJson ? "none" : "flex";
+
+    // Langsung unduh otomatis ke perangkat - TIDAK dikirim ke server manapun
+    triggerLocalDownload(blob, fileName);
+
+    showState(stateSuccess);
+
+  } catch (err) {
+    console.error(err);
+    showError(err.message || "Terjadi kesalahan saat menyiapkan file.");
+  }
+}
+
+main();
+</script>
+</body>
+</html>
